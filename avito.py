@@ -54,7 +54,7 @@ class AvitoSearch:
             if time.find("минут") != -1:
                 good_time.append(time)
         for time in good_time:
-            await self.page.locator(f"text={time}").click()
+            await self.page.locator(f"text={time}").first.click()
         logger.info(msg="Pages searched")
 
     async def get_url_pages(self) -> List[str]:
