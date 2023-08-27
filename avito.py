@@ -1,10 +1,11 @@
 import asyncio
 import logging
 import os
-from typing import List
+from typing import List, Optional
 
 import pandas as pd
 from playwright.async_api import async_playwright
+from playwright.async_api._generated import Browser, BrowserContext, Page
 
 from tg import TelegramBot
 
@@ -15,16 +16,12 @@ logger.setLevel(logging.DEBUG)
 
 class AvitoSearch:
     def __init__(self):
-        self.bot = TelegramBot()
-        self.page = None
-        self.browser = None
-        self.context = None
-        self.search_url = (
-            "https://www.avito.ru/moskva/kommercheskaya_nedvizhimost/sdam/magazin"
-            "-ASgBAQICAUSwCNRWAUCeww0UiNk5?f"
-            "=ASgBAQECAkSwCNRW9BKk2gECQJ7DDRSI2TnIwA4U1uqZAgJFthMVeyJmcm9tIjozMCwid"
-            "G8iOm51bGx9xpoMFnsiZnJvbSI6MCwidG8iOjEwMDAwMH0&s=104"
-        )
+        self.bot: TelegramBot = TelegramBot()
+        self.page: Optional[Page] = None
+        self.browser: Optional[Browser] = None
+        self.context: Optional[BrowserContext] = None
+        self.search_url: str = os.getenv("AVITO_URL")
+        self.reload_time: int = 60
 
     async def init_browser(self) -> None:
         async with async_playwright() as p:
@@ -40,8 +37,8 @@ class AvitoSearch:
                 url_to_tg = self.check_page_is_new(url_pages)
                 for url in url_to_tg:
                     await self.bot.send_message(chat_id=os.getenv("CHAT_ID"), msg=url)
-                await asyncio.sleep(30)
-                logger.info(msg="Updating web page")
+                await asyncio.sleep(self.reload_time)
+                logger.info(msg="Updating page")
                 await self.page.reload()
 
     async def get_pages(self) -> None:
@@ -54,7 +51,9 @@ class AvitoSearch:
             if time.find("минут") != -1:
                 good_time.append(time)
         for time in good_time:
-            await self.page.locator(f"text={time}").first.click()
+            pages = await self.page.locator(f"text={time}").all()
+            for page in pages:
+                await page.click()
         logger.info(msg="Pages searched")
 
     async def get_url_pages(self) -> List[str]:
