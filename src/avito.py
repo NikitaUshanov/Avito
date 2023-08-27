@@ -37,6 +37,7 @@ class AvitoSearch:
                 url_to_tg = self.check_page_is_new(url_pages)
                 for url in url_to_tg:
                     await self.bot.send_message(chat_id=os.getenv("CHAT_ID"), msg=url)
+                logger.info(msg=f"Wait {self.reload_time} seconds")
                 await asyncio.sleep(self.reload_time)
                 logger.info(msg="Updating page")
                 await self.page.reload()
