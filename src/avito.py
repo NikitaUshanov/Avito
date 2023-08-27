@@ -7,7 +7,7 @@ import pandas as pd
 from playwright.async_api import async_playwright
 from playwright.async_api._generated import Browser, BrowserContext, Page
 
-from tg import TelegramBot
+from src.tg import TelegramBot
 
 logging.basicConfig()
 logger = logging.getLogger("Avito")
